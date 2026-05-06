@@ -34,12 +34,12 @@ function App() {
         let result = airports;
         if (searchTerm) {
             result = result.filter((a) =>
-                a.name.toLowerCase().includes(searchTerm.toLowerCase())
+                a.name?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
         if (cityFilter) {
             result = result.filter((a) =>
-                a.city.toLowerCase().includes(cityFilter.toLowerCase())
+                a.city?.toLowerCase().includes(cityFilter.toLowerCase())
             );
         }
         setFilteredAirports(result);

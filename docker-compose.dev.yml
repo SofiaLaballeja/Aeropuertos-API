@@ -1,0 +1,57 @@
+services:
+  # Base de datos principal
+  mongodb:
+    image: mongo:latest
+    container_name: mongo-aeropuertos-dev
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data_dev:/data/db
+
+  # Redis para Geolocalización y Popularidad
+  redis:
+    image: redis:alpine
+    container_name: redis-aeropuertos-dev
+    ports:
+      - "6379:6379"
+
+  # Backend API con hot-reload
+  backend:
+    build:
+      context: ./api-aeropuerto
+      dockerfile: Dockerfile.dev
+    container_name: api-backend-aeropuertos-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/airport_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./api-aeropuerto/src:/app/src
+      - ./api-aeropuerto/package.json:/app/package.json
+      - ./api-aeropuerto/tsconfig.json:/app/tsconfig.json
+      - ./api-aeropuerto/nest-cli.json:/app/nest-cli.json
+
+  # Frontend con hot-reload (Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend-aeropuertos-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api/airports
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+      - ./frontend/package.json:/app/package.json
+
+volumes:
+  mongo_data_dev:

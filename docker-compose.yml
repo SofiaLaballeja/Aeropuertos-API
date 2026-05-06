@@ -1,0 +1,46 @@
+
+
+services:
+  #Base de datos principal
+  mongodb:
+    image: mongo:latest
+    container_name: mongo-aeropuertos
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  #Redis para Geolocalización y Popularidad
+  # (Usamos una sola instancia pero con bases de datos lógicas o prefijos distintos)
+  redis:
+    image: redis:alpine
+    container_name: redis-aeropuertos
+    ports:
+      - "6379:6379"
+
+  #Backend API
+  backend:
+    build: ./api-aeropuerto
+    container_name: api-backend-aeropuertos
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/airport_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+
+  #Frontend
+  frontend:
+    build: ./frontend
+    container_name: frontend-aeropuertos
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+
+
